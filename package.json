@@ -2,9 +2,9 @@
   "name": "express-js-auth-boilerplate",
   "version": "1.0.0",
   "description": "starter for express js auth",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/robertung/express-js-auth-boilerplate#readme",
   "dependencies": {
-    "brcypt": "^1.0.1",
+    "bcrypt": "^5.0.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1"
