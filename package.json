@@ -2,9 +2,10 @@
   "name": "express-js-auth-boilerplate",
   "version": "1.0.0",
   "description": "starter for express js auth",
-  "main": "server.js",
+  "main": "src/server.ts",
   "scripts": {
-    "serve": "nodemon server.js"
+    "serve": "nodemon src/server.ts",
+    "start": "node ."
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "typescript": "^4.6.2"
   }
 }
