@@ -1,0 +1,25 @@
+{
+  "name": "express-js-auth-boilerplate",
+  "version": "1.0.0",
+  "description": "starter for express js auth",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertung/express-js-auth-boilerplate.git"
+  },
+  "author": "Robert Ung Sar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robertung/express-js-auth-boilerplate/issues"
+  },
+  "homepage": "https://github.com/robertung/express-js-auth-boilerplate#readme",
+  "dependencies": {
+    "brcypt": "^1.0.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "jsonwebtoken": "^8.5.1"
+  }
+}
