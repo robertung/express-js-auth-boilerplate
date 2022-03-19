@@ -1,27 +1,26 @@
-// const express = require('express');
-const express = require("express");
+const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const app = express();
 
-// interface User {
-//     name: string;
-//     password: string;
-// }
+interface User {
+    name: string;
+    password: string;
+}
 
 app.use(express.json());
 
-let users: any = [];
-const posts: [] = [];
+let users: User[] = [];
+const posts: User[] = [];
 
-app.get('/post', (req, res) => {
+app.get('/post', (req: any, res: any): void => {
     res.json(posts);
 });
-app.get('/users', (req, res) => {
+app.get('/users', (req: any, res: { json: (arg0: any) => void; }): void => {
     res.json(users);
 });
 
-app.post('/createuser', async (req, res) => {
+app.post('/createuser', async (req: { body: User; }, res: any): Promise<void> => {
     try {
         const hashPassword = await bcrypt.hash(req.body.password, 10);
         const user = {
@@ -35,17 +34,18 @@ app.post('/createuser', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res) => {
-    const user = users.find(user => user.name === req.body.name);
+app.post('/login', async (req: { body: User; }, res: any): Promise<void> => {
+    const user = users.find((user: { name: any; }) => user.name === req.body.name);
     if (user === undefined) {
         return res.status(400).send('Cannot find user');
     }
     try {
-        if (await bcrypt.compare(req.body.password, user.password)) {
-            res.send('success');
-        } else {
-            res.send('failed');
-        }
+        const message = await bcrypt.compare(req.body.password, user.password)
+            ? 'success'
+            : 'failed';
+        
+        res.send(message);
+
     } catch {
         res.status(500)
     }
