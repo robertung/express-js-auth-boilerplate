@@ -45,10 +45,6 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
     const SQLCheckEmail: string = `SELECT email FROM users WHERE email = '${email}'`;
 
     const checkEmailResults: any = await dbConnect(req, res, SQLCheckEmail);
-    console.log(checkEmailResults, 'test');
-    if (password !== passwordConfirm) {
-        return res.status(400).send({ message: 'Passwords do not match.' });
-    }
 
     if (checkEmailResults.length > 0) {
         return res.status(400).send({ message: 'That email is already in use.' });
@@ -71,7 +67,10 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
         const createUserResults: any = await dbConnect(req, res, SQLCreateUser, SQLCreateUserObj);
         res.status(200).send({ message: 'User successfully registered.' });
     } catch(error) {
-        console.log(error, 'what happen');
+        res.status(500).send({ 
+            message: 'Error',
+            error,
+        });
     }
 });
 
