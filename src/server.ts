@@ -23,7 +23,7 @@ const mysqlTimeStamp: string = new Date().toJSON().slice(0, 19).replace('T', ' '
 app.use(express.json());
 
 app.get('/users', async (req: any, res: any): Promise<void> => {
-    const SQLReturnUserList: string = 'SELECT first_name, last_name FROM users';
+    const SQLReturnUserList: string = 'SELECT first_name, last_name, email FROM users';
     const results = await dbConnect(req, res, SQLReturnUserList);
     return res.status(400).send({ results });
 });
@@ -52,7 +52,7 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
 
     // If email is not in use, create hash and write to DB
     const hashPassword: string = await bcrypt.hash(req.body.password, 10);
-    
+
     const SQLCreateUser: string = 'INSERT INTO users SET ?';
     const SQLCreateUserObj: User = {
         first_name, 
@@ -75,18 +75,19 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
 });
 
 app.post('/login', async (req: { body: User; }, res)  => {
-// app.post('/login', async (req: { body: User; }, res): void | Response<any, Record<string, any>, number>  => {
-    // const user: User | undefined = users.find((user: { name: string; }) => user.name === req.body.name);
-    // if (user === undefined) {
-    //     return res.status(400).send('Cannot find user');
-    // }
+    const { email, password } = req.body;
+    const SQLGetUserInfo: string = `SELECT email, password FROM users where email = '${email}'`;
+    const userInfo: any = await dbConnect(req, res, SQLGetUserInfo);
+    
+    if (userInfo.length === 0) {
+        return res.status(400).send('Cannot find user');
+    }
     try {
-        // const message = await bcrypt.compare(req.body.password, user.password)
-        //     ? 'success'
-        //     : 'failed';
+        const message: string = await bcrypt.compare(password, userInfo[0].password)
+            ? 'success'
+            : 'failed to login either password or email is incorrect';
         
-        // res.send(message);
-
+        res.send(message);
     } catch {
         res.status(500)
     }
