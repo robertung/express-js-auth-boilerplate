@@ -22,7 +22,7 @@ const mysqlTimeStamp: string = new Date().toJSON().slice(0, 19).replace('T', ' '
 
 app.use(express.json());
 
-app.get('/users', async (req: any, res: any): Promise<void> => {
+app.get('/users', authenticationToken, async (req: any, res: any): Promise<void> => {
     const SQLReturnUserList: string = 'SELECT first_name, last_name, email FROM users';
     const results = await dbConnect(req, res, SQLReturnUserList);
     return res.status(400).send({ results });
@@ -64,7 +64,7 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
     }
 
     try {
-        const createUserResults: any = await dbConnect(req, res, SQLCreateUser, SQLCreateUserObj);
+        await dbConnect(req, res, SQLCreateUser, SQLCreateUserObj);
         res.status(200).send({ message: 'User successfully registered.' });
     } catch(error) {
         res.status(500).send({ 
@@ -76,22 +76,39 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
 
 app.post('/login', async (req: { body: User; }, res)  => {
     const { email, password } = req.body;
-    const SQLGetUserInfo: string = `SELECT email, password FROM users where email = '${email}'`;
+    const SQLGetUserInfo: string = `SELECT email, password, first_name FROM users where email = '${email}'`;
     const userInfo: any = await dbConnect(req, res, SQLGetUserInfo);
-    
+
     if (userInfo.length === 0) {
         return res.status(400).send('Cannot find user');
     }
     try {
-        const message: string = await bcrypt.compare(password, userInfo[0].password)
-            ? 'success'
-            : 'failed to login either password or email is incorrect';
-        
-        res.send(message);
+        if (await bcrypt.compare(password, userInfo[0].password)) {
+            const username = req.body.first_name;
+            const user = { name: username };
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET as string);
+            return res.json({ accessToken: accessToken });
+        } 
+        return res.status(400).send('failed to login either password or email is incorrect');
     } catch {
         res.status(500)
     }
 });
+
+function authenticationToken(req: any, res: any, next: any): void {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (token === undefined) {
+        return res.status(401);
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err: any, user: any) => {
+        if (err) {
+            return res.sendStatus(403);
+        }
+        next();
+    });
+}
 
 app.listen(process.env.SERVER_PORT,() => {
     console.log(`Server started at http://localhost:${process.env.SERVER_PORT}`);
