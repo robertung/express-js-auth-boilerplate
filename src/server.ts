@@ -16,6 +16,7 @@ interface User {
     passwordConfirm?: string;
     created_at?: string;
     updated_at?: string;
+    id?: number;
 }
 
 const mysqlTimeStamp: string = new Date().toJSON().slice(0, 19).replace('T', ' ');
@@ -23,7 +24,7 @@ const mysqlTimeStamp: string = new Date().toJSON().slice(0, 19).replace('T', ' '
 app.use(express.json());
 
 app.get('/users', authenticationToken, async (req: any, res: any): Promise<void> => {
-    const SQLReturnUserList: string = 'SELECT first_name, last_name, email FROM users';
+    const SQLReturnUserList: string = `SELECT first_name, last_name, email FROM users WHERE id = ${req.userId.userId}`;
     const results = await dbConnect(req, res, SQLReturnUserList);
     return res.status(400).send({ results });
 });
@@ -76,7 +77,7 @@ app.post('/register', async (req: { body: User; }, res: any): Promise<any> => {
 
 app.post('/login', async (req: { body: User; }, res)  => {
     const { email, password } = req.body;
-    const SQLGetUserInfo: string = `SELECT email, password, first_name FROM users where email = '${email}'`;
+    const SQLGetUserInfo: string = `SELECT email, password, first_name, id FROM users where email = '${email}'`;
     const userInfo: any = await dbConnect(req, res, SQLGetUserInfo);
 
     if (userInfo.length === 0) {
@@ -84,9 +85,8 @@ app.post('/login', async (req: { body: User; }, res)  => {
     }
     try {
         if (await bcrypt.compare(password, userInfo[0].password)) {
-            const username = req.body.first_name;
-            const user = { name: username };
-            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET as string);
+            const userId = { userId: userInfo[0].id };
+            const accessToken = jwt.sign(userId, process.env.ACCESS_TOKEN_SECRET as string);
             return res.json({ accessToken: accessToken });
         } 
         return res.status(400).send('failed to login either password or email is incorrect');
@@ -102,10 +102,11 @@ function authenticationToken(req: any, res: any, next: any): void {
     if (token === undefined) {
         return res.status(401);
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err: any, user: any) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string, (err: any, userId: any) => {
         if (err) {
             return res.sendStatus(403);
         }
+        req.userId = userId;
         next();
     });
 }
